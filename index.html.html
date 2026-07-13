@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekmenu Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2F4EF;
+    --paper-dark:#E7EBE2;
+    --ink:#20261E;
+    --forest:#1F3A2E;
+    --forest-light:#2E5240;
+    --yolk:#D9A82D;
+    --yolk-dark:#B9891A;
+    --line:#20261E;
+    --danger:#9A3324;
+    --ok:#3A6B4A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.4;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 20px 80px;}
+
+  header.top{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-bottom:4px solid var(--ink);
+    padding-bottom:14px; margin-bottom:28px;
+  }
+  header.top h1{
+    font-family:'Fraunces', serif; font-weight:900; font-size:38px;
+    margin:0; letter-spacing:-0.5px;
+  }
+  header.top .tag{
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+    text-transform:uppercase; letter-spacing:0.12em; color:var(--forest);
+    background:#fff; border:2px solid var(--forest); padding:5px 10px;
+  }
+
+  .grid{display:grid; grid-template-columns: 1.5fr 1fr; gap:28px;}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr;} }
+
+  section{margin-bottom:28px;}
+  .card{
+    background:#fff; border:2px solid var(--ink); padding:20px;
+  }
+  h2.section-title{
+    font-family:'Fraunces', serif; font-weight:700; font-size:22px;
+    margin:0 0 16px; display:flex; align-items:center; gap:10px;
+  }
+  h2.section-title .num{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:600;
+    background:var(--forest); color:#fff; padding:3px 8px;
+  }
+
+  label{font-size:13px; font-weight:600; display:block; margin-bottom:4px;}
+  input[type=text], input[type=number], select{
+    width:100%; padding:8px 10px; border:1.5px solid var(--ink); background:#fff;
+    font-family:'IBM Plex Sans', sans-serif; font-size:14px; color:var(--ink);
+  }
+  .row{display:flex; gap:12px; flex-wrap:wrap;}
+  .row > div{flex:1; min-width:110px; margin-bottom:12px;}
+
+  button{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:13px;
+    text-transform:uppercase; letter-spacing:0.05em;
+    background:var(--forest); color:#fff; border:2px solid var(--forest);
+    padding:10px 16px; cursor:pointer;
+  }
+  button:hover{background:var(--forest-light);}
+  button.secondary{background:#fff; color:var(--forest); border:2px solid var(--forest);}
+  button.secondary:hover{background:var(--paper-dark);}
+  button.danger{background:#fff; color:var(--danger); border:2px solid var(--danger);}
+  button.danger:hover{background:#fbe9e6;}
+  button.small{padding:5px 9px; font-size:11px;}
+
+  /* Ingredient repeater */
+  .ing-row{display:grid; grid-template-columns: 2fr 1fr 1fr 1.4fr auto; gap:8px; margin-bottom:8px; align-items:end;}
+  .ing-row label{font-size:11px; margin-bottom:2px;}
+
+  /* Recipe cards */
+  .recipe-card{
+    border:1.5px solid var(--ink); padding:12px 14px; margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .recipe-card .info b{font-family:'Fraunces', serif; font-size:16px;}
+  .recipe-card .macros{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--forest);
+  }
+
+  /* Day tabs */
+  .day-tabs{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;}
+  .day-tab{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:600;
+    padding:7px 12px; border:1.5px solid var(--ink); background:#fff; cursor:pointer;
+  }
+  .day-tab.active{background:var(--yolk); border-color:var(--yolk-dark);}
+
+  .meal-slot{
+    display:grid; grid-template-columns: 90px 2fr 100px; gap:10px;
+    align-items:center; margin-bottom:10px; padding-bottom:10px;
+    border-bottom:1px dashed #ccc;
+  }
+  .meal-slot .lbl{font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:700;}
+
+  /* Nutrition label */
+  .nutrition-label{
+    border:4px solid var(--ink); background:#fff; padding:0;
+  }
+  .nutrition-label .nl-head{
+    padding:10px 14px 4px; border-bottom:8px solid var(--ink);
+  }
+  .nutrition-label .nl-head h3{
+    font-family:'Fraunces', serif; font-weight:900; font-size:26px; margin:0;
+  }
+  .nutrition-label .nl-head .sub{font-size:12px; color:#555;}
+  .nl-row{
+    display:flex; justify-content:space-between; padding:7px 14px;
+    border-bottom:1px solid var(--ink); font-family:'IBM Plex Mono', monospace;
+  }
+  .nl-row.thick{border-bottom:4px solid var(--ink);}
+  .nl-row .val{font-weight:700;}
+  .nl-row .target{color:#777; font-weight:500;}
+  .bar-bg{background:var(--paper-dark); height:8px; margin:2px 14px 10px;}
+  .bar-fill{height:8px; background:var(--yolk);}
+  .bar-fill.over{background:var(--danger);}
+
+  /* Shopping list */
+  .shop-cat{margin-bottom:18px;}
+  .shop-cat h4{
+    font-family:'IBM Plex Mono', monospace; text-transform:uppercase; letter-spacing:0.08em;
+    font-size:12px; border-bottom:2px solid var(--ink); padding-bottom:4px; margin:0 0 8px;
+  }
+  .shop-item{
+    display:flex; align-items:center; gap:8px; padding:4px 0; font-size:14px;
+  }
+  .shop-item input{width:auto; margin:0;}
+  .shop-item.checked label{text-decoration:line-through; color:#999;}
+  .shop-item label{font-weight:400; display:inline; margin:0;}
+  .shop-item .amt{font-family:'IBM Plex Mono', monospace; font-weight:600; min-width:90px;}
+
+  .empty-note{font-size:13px; color:#777; font-style:italic;}
+
+  @media print{
+    button, .day-tabs, header.top .tag, .no-print{display:none !important;}
+    .grid{grid-template-columns:1fr;}
+    body{background:#fff;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>Weekmenu Planner</h1>
+    <div class="tag">macro's · porties · boodschappen</div>
+  </header>
+
+  <div class="grid">
+    <div>
+
+      <section class="card">
+        <h2 class="section-title"><span class="num">01</span> Instellingen</h2>
+        <div class="row">
+          <div>
+            <label>Aantal personen</label>
+            <input type="number" id="setPersonen" value="2" min="1" max="12">
+          </div>
+          <div>
+            <label>Aantal dagen</label>
+            <input type="number" id="setDagen" value="7" min="1" max="7">
+          </div>
+        </div>
+        <div class="row">
+          <div><label>Doel kcal / dag</label><input type="number" id="targetKcal" value="2200"></div>
+          <div><label>Doel eiwit (g)</label><input type="number" id="targetEiwit" value="160"></div>
+          <div><label>Doel kh (g)</label><input type="number" id="targetKh" value="200"></div>
+          <div><label>Doel vet (g)</label><input type="number" id="targetVet" value="70"></div>
+        </div>
+        <button onclick="applySettings()">Instellingen toepassen</button>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title"><span class="num">02</span> Receptenbank</h2>
+        <div class="row">
+          <div style="flex:2;"><label>Naam recept</label><input type="text" id="rNaam" placeholder="bv. Kip-quinoa bowl"></div>
+        </div>
+        <div class="row">
+          <div><label>Kcal / portie</label><input type="number" id="rKcal"></div>
+          <div><label>Eiwit (g) / portie</label><input type="number" id="rEiwit"></div>
+          <div><label>Kh (g) / portie</label><input type="number" id="rKh"></div>
+          <div><label>Vet (g) / portie</label><input type="number" id="rVet"></div>
+        </div>
+
+        <label style="margin-top:6px;">Ingrediënten (hoeveelheid per 1 portie)</label>
+        <div id="ingRows"></div>
+        <button class="secondary small" onclick="addIngRow()">+ Ingrediënt</button>
+
+        <div style="margin-top:14px;">
+          <button onclick="saveRecipe()">Recept opslaan</button>
+        </div>
+
+        <div id="recipeList" style="margin-top:18px;"></div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title"><span class="num">03</span> Standaardlijstje</h2>
+        <p class="empty-note" style="margin-top:-6px;">Vaste items die je regelmatig nodig hebt (melk, brood, wc-papier...). Vink aan/uit per bestelling.</p>
+        <div class="row">
+          <div style="flex:2;"><label>Naam</label><input type="text" id="sNaam" placeholder="bv. Havermelk"></div>
+          <div><label>Hoeveelh.</label><input type="number" id="sHvh" value="1"></div>
+          <div><label>Eenheid</label><select id="sEenheid"></select></div>
+          <div><label>Categorie</label><select id="sCat"></select></div>
+        </div>
+        <button class="secondary small" onclick="addStaple()">+ Toevoegen aan standaardlijstje</button>
+        <div id="stapleList" style="margin-top:14px;"></div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title"><span class="num">04</span> Snelle bestelling</h2>
+        <p class="empty-note" style="margin-top:-6px;">Vink één of meer recepten aan, kies je standaardlijstje erbij, en genereer direct een boodschappenlijst — zonder eerst een week te plannen.</p>
+        <div id="quickRecipeList"></div>
+        <div class="row" style="margin-top:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="quickIncludeStaples" checked style="width:auto;">
+            <label for="quickIncludeStaples" style="margin:0;">Standaardlijstje meenemen</label>
+          </div>
+        </div>
+        <button onclick="generateQuickOrder()">Genereer boodschappenlijst (snel)</button>
+        <div id="quickShoppingList" style="margin-top:16px;"></div>
+        <div id="quickExportBtn" style="margin-top:10px;"></div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title"><span class="num">05</span> Weekplanning</h2>
+        <div class="day-tabs" id="dayTabs"></div>
+        <div id="dayPlanner"></div>
+      </section>
+
+    </div>
+
+    <div>
+      <section class="card" style="margin-bottom:20px;">
+        <h2 class="section-title" style="margin-bottom:10px;"><span class="num">06</span> Dagoverzicht</h2>
+        <div id="nutritionLabel"></div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title"><span class="num">07</span> Boodschappenlijst (week)</h2>
+        <button onclick="generateShoppingList()">Genereer boodschappenlijst</button>
+        <button class="secondary" onclick="window.print()" style="margin-left:8px;">Printen</button>
+        <button class="secondary" onclick="exportForPicnic('week')" style="margin-left:8px;">Exporteer voor Picnic</button>
+        <div id="shoppingList" style="margin-top:16px;"></div>
+      </section>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---------- State ----------
+let settings = { personen:2, dagen:7, target:{kcal:2200, eiwit:160, kh:200, vet:70} };
+let recipes = []; // {id, naam, kcal, eiwit, kh, vet, ingredients:[{naam,hoeveelheid,eenheid,categorie}]}
+let staples = []; // {id, naam, hoeveelheid, eenheid, categorie, actief}
+let planning = {}; // dayIndex -> { Ontbijt:{recipeId,porties}, Lunch:..., Diner:..., Snack:... }
+let activeDay = 0;
+const MEALS = ["Ontbijt","Lunch","Diner","Snack"];
+const CATS = ["Groente & Fruit","Vlees & Vis","Zuivel & Eieren","Brood & Granen","Kruidenierskast","Diepvries","Overig"];
+const UNITS = ["g","kg","ml","l","stuks","el","tl","snuf"];
+let shoppingChecked = {};
+
+function uid(){ return 'id'+Math.random().toString(36).slice(2,9); }
+
+// ---------- Lokale opslag (recepten & standaardlijstje blijven bewaard) ----------
+function persist(){
+  try{
+    localStorage.setItem('weekmenu_recipes', JSON.stringify(recipes));
+    localStorage.setItem('weekmenu_staples', JSON.stringify(staples));
+  }catch(err){ console.warn('Opslaan mislukt (mogelijk geen lokale opslag beschikbaar):', err); }
+}
+function loadPersisted(){
+  try{
+    const r = localStorage.getItem('weekmenu_recipes');
+    const s = localStorage.getItem('weekmenu_staples');
+    if(r) recipes = JSON.parse(r);
+    if(s) staples = JSON.parse(s);
+  }catch(err){ console.warn('Laden mislukt:', err); }
+}
+
+// ---------- Settings ----------
+function applySettings(){
+  settings.personen = parseInt(document.getElementById('setPersonen').value)||2;
+  settings.dagen = Math.min(7, parseInt(document.getElementById('setDagen').value)||7);
+  settings.target.kcal = parseInt(document.getElementById('targetKcal').value)||0;
+  settings.target.eiwit = parseInt(document.getElementById('targetEiwit').value)||0;
+  settings.target.kh = parseInt(document.getElementById('targetKh').value)||0;
+  settings.target.vet = parseInt(document.getElementById('targetVet').value)||0;
+  for(let d=0; d<settings.dagen; d++){
+    if(!planning[d]) planning[d] = {};
+  }
+  if(activeDay >= settings.dagen) activeDay = 0;
+  renderDayTabs();
+  renderDayPlanner();
+  renderNutritionLabel();
+}
+
+// ---------- Ingredient rows (recipe form) ----------
+function addIngRow(vals){
+  vals = vals || {naam:'', hoeveelheid:'', eenheid:'g', categorie:CATS[0]};
+  const wrap = document.getElementById('ingRows');
+  const row = document.createElement('div');
+  row.className = 'ing-row';
+  row.innerHTML = `
+    <div><label>Ingrediënt</label><input type="text" class="ing-naam" value="${vals.naam}" placeholder="bv. kipfilet"></div>
+    <div><label>Hoeveelh.</label><input type="number" class="ing-hvh" value="${vals.hoeveelheid}"></div>
+    <div><label>Eenheid</label><select class="ing-eenheid">${UNITS.map(u=>`<option ${u===vals.eenheid?'selected':''}>${u}</option>`).join('')}</select></div>
+    <div><label>Categorie</label><select class="ing-cat">${CATS.map(c=>`<option ${c===vals.categorie?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div><button class="danger small" type="button" onclick="this.closest('.ing-row').remove()">✕</button></div>
+  `;
+  wrap.appendChild(row);
+}
+addIngRow(); // start with one row
+
+// ---------- Standaardlijstje ----------
+function populateStapleSelects(){
+  document.getElementById('sEenheid').innerHTML = UNITS.map(u=>`<option>${u}</option>`).join('');
+  document.getElementById('sCat').innerHTML = CATS.map(c=>`<option>${c}</option>`).join('');
+}
+
+function addStaple(){
+  const naam = document.getElementById('sNaam').value.trim();
+  if(!naam){ alert('Geef het item een naam.'); return; }
+  staples.push({
+    id: uid(),
+    naam,
+    hoeveelheid: parseFloat(document.getElementById('sHvh').value)||1,
+    eenheid: document.getElementById('sEenheid').value,
+    categorie: document.getElementById('sCat').value,
+    actief: true
+  });
+  document.getElementById('sNaam').value='';
+  document.getElementById('sHvh').value='1';
+  persist();
+  renderStapleList();
+}
+
+function toggleStaple(id){
+  const s = staples.find(x=>x.id===id);
+  if(s) s.actief = !s.actief;
+  persist();
+}
+
+function deleteStaple(id){
+  staples = staples.filter(s=>s.id!==id);
+  persist();
+  renderStapleList();
+}
+
+function renderStapleList(){
+  const el = document.getElementById('stapleList');
+  if(staples.length===0){ el.innerHTML = '<p class="empty-note">Nog geen vaste items toegevoegd.</p>'; return; }
+  el.innerHTML = staples.map(s=>`
+    <div class="recipe-card">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" ${s.actief?'checked':''} onchange="toggleStaple('${s.id}')">
+        <div class="info">
+          <b>${s.naam}</b><br>
+          <span class="macros">${s.hoeveelheid} ${s.eenheid} · ${s.categorie}</span>
+        </div>
+      </div>
+      <button class="danger small" onclick="deleteStaple('${s.id}')">Verwijderen</button>
+    </div>
+  `).join('');
+}
+
+// ---------- Recipes ----------
+function saveRecipe(){
+  const naam = document.getElementById('rNaam').value.trim();
+  if(!naam){ alert('Geef het recept een naam.'); return; }
+  const ingredients = [...document.querySelectorAll('#ingRows .ing-row')].map(row=>({
+    naam: row.querySelector('.ing-naam').value.trim(),
+    hoeveelheid: parseFloat(row.querySelector('.ing-hvh').value)||0,
+    eenheid: row.querySelector('.ing-eenheid').value,
+    categorie: row.querySelector('.ing-cat').value
+  })).filter(i=>i.naam);
+
+  recipes.push({
+    id: uid(),
+    naam,
+    kcal: parseFloat(document.getElementById('rKcal').value)||0,
+    eiwit: parseFloat(document.getElementById('rEiwit').value)||0,
+    kh: parseFloat(document.getElementById('rKh').value)||0,
+    vet: parseFloat(document.getElementById('rVet').value)||0,
+    ingredients
+  });
+
+  // reset form
+  document.getElementById('rNaam').value='';
+  document.getElementById('rKcal').value='';
+  document.getElementById('rEiwit').value='';
+  document.getElementById('rKh').value='';
+  document.getElementById('rVet').value='';
+  document.getElementById('ingRows').innerHTML='';
+  addIngRow();
+
+  persist();
+  renderRecipeList();
+  renderDayPlanner();
+  renderQuickRecipeList();
+}
+
+function deleteRecipe(id){
+  recipes = recipes.filter(r=>r.id!==id);
+  Object.values(planning).forEach(day=>{
+    MEALS.forEach(m=>{ if(day[m] && day[m].recipeId===id) delete day[m]; });
+  });
+  persist();
+  renderRecipeList();
+  renderDayPlanner();
+  renderNutritionLabel();
+  renderQuickRecipeList();
+}
+
+function renderRecipeList(){
+  const el = document.getElementById('recipeList');
+  if(recipes.length===0){ el.innerHTML = '<p class="empty-note">Nog geen recepten toegevoegd.</p>'; return; }
+  el.innerHTML = recipes.map(r=>`
+    <div class="recipe-card">
+      <div class="info">
+        <b>${r.naam}</b><br>
+        <span class="macros">${r.kcal} kcal · E ${r.eiwit}g · KH ${r.kh}g · V ${r.vet}g / portie · ${r.ingredients.length} ingr.</span>
+      </div>
+      <button class="danger small" onclick="deleteRecipe('${r.id}')">Verwijderen</button>
+    </div>
+  `).join('');
+}
+
+// ---------- Day planner ----------
+function renderDayTabs(){
+  const el = document.getElementById('dayTabs');
+  let html='';
+  for(let d=0; d<settings.dagen; d++){
+    html += `<div class="day-tab ${d===activeDay?'active':''}" onclick="selectDay(${d})">Dag ${d+1}</div>`;
+  }
+  el.innerHTML = html;
+}
+function selectDay(d){
+  activeDay = d;
+  renderDayTabs();
+  renderDayPlanner();
+  renderNutritionLabel();
+}
+
+function renderDayPlanner(){
+  const el = document.getElementById('dayPlanner');
+  if(recipes.length===0){
+    el.innerHTML = '<p class="empty-note">Voeg eerst recepten toe in de receptenbank hierboven.</p>';
+    return;
+  }
+  if(!planning[activeDay]) planning[activeDay] = {};
+  const day = planning[activeDay];
+
+  el.innerHTML = MEALS.map(m=>{
+    const cur = day[m] || {recipeId:'', porties:settings.personen};
+    const options = `<option value="">— geen —</option>` + recipes.map(r=>
+      `<option value="${r.id}" ${cur.recipeId===r.id?'selected':''}>${r.naam}</option>`
+    ).join('');
+    return `
+      <div class="meal-slot">
+        <div class="lbl">${m}</div>
+        <select onchange="updateSlot(${activeDay},'${m}','recipeId',this.value)">${options}</select>
+        <input type="number" min="0" value="${cur.porties}" onchange="updateSlot(${activeDay},'${m}','porties',this.value)" title="aantal porties">
+      </div>
+    `;
+  }).join('');
+}
+
+function updateSlot(dayIndex, meal, field, value){
+  if(!planning[dayIndex]) planning[dayIndex] = {};
+  if(!planning[dayIndex][meal]) planning[dayIndex][meal] = {recipeId:'', porties:settings.personen};
+  planning[dayIndex][meal][field] = field==='porties' ? (parseFloat(value)||0) : value;
+  if(field==='recipeId' && !value){ delete planning[dayIndex][meal]; }
+  renderNutritionLabel();
+}
+
+// ---------- Nutrition label ----------
+function computeDayTotals(dayIndex){
+  const totals = {kcal:0, eiwit:0, kh:0, vet:0};
+  const day = planning[dayIndex] || {};
+  MEALS.forEach(m=>{
+    const slot = day[m];
+    if(slot && slot.recipeId){
+      const r = recipes.find(x=>x.id===slot.recipeId);
+      if(r){
+        totals.kcal += r.kcal * slot.porties;
+        totals.eiwit += r.eiwit * slot.porties;
+        totals.kh += r.kh * slot.porties;
+        totals.vet += r.vet * slot.porties;
+      }
+    }
+  });
+  return totals;
+}
+
+function bar(value, target){
+  const pct = target>0 ? Math.min(140, Math.round(value/target*100)) : 0;
+  const over = pct>105;
+  return `<div class="bar-bg"><div class="bar-fill ${over?'over':''}" style="width:${Math.min(100,pct)}%"></div></div>`;
+}
+
+function renderNutritionLabel(){
+  const el = document.getElementById('nutritionLabel');
+  const t = computeDayTotals(activeDay);
+  const tgt = settings.target;
+  el.innerHTML = `
+    <div class="nutrition-label">
+      <div class="nl-head">
+        <h3>Dag ${activeDay+1}</h3>
+        <div class="sub">Voedingswaarde t.o.v. dagdoel</div>
+      </div>
+      <div class="nl-row thick"><span>Calorieën</span><span class="val">${Math.round(t.kcal)} <span class="target">/ ${tgt.kcal} kcal</span></span></div>
+      ${bar(t.kcal, tgt.kcal)}
+      <div class="nl-row"><span>Eiwit</span><span class="val">${Math.round(t.eiwit)} <span class="target">/ ${tgt.eiwit} g</span></span></div>
+      ${bar(t.eiwit, tgt.eiwit)}
+      <div class="nl-row"><span>Koolhydraten</span><span class="val">${Math.round(t.kh)} <span class="target">/ ${tgt.kh} g</span></span></div>
+      ${bar(t.kh, tgt.kh)}
+      <div class="nl-row"><span>Vet</span><span class="val">${Math.round(t.vet)} <span class="target">/ ${tgt.vet} g</span></span></div>
+      ${bar(t.vet, tgt.vet)}
+    </div>
+  `;
+}
+
+// ---------- Shopping list ----------
+function weekSelections(){
+  const sels = [];
+  for(let d=0; d<settings.dagen; d++){
+    const day = planning[d] || {};
+    MEALS.forEach(m=>{
+      const slot = day[m];
+      if(slot && slot.recipeId) sels.push({recipeId:slot.recipeId, porties:slot.porties});
+    });
+  }
+  return sels;
+}
+
+function aggregateFromSelections(selections, includeStaples){
+  const agg = {}; // key: naam+eenheid+categorie -> hoeveelheid
+  selections.forEach(sel=>{
+    const r = recipes.find(x=>x.id===sel.recipeId);
+    if(r){
+      r.ingredients.forEach(ing=>{
+        const key = ing.naam.toLowerCase()+'|'+ing.eenheid+'|'+ing.categorie;
+        if(!agg[key]) agg[key] = {naam:ing.naam, eenheid:ing.eenheid, categorie:ing.categorie, hoeveelheid:0};
+        agg[key].hoeveelheid += ing.hoeveelheid * sel.porties;
+      });
+    }
+  });
+  if(includeStaples){
+    staples.filter(s=>s.actief).forEach(s=>{
+      const key = s.naam.toLowerCase()+'|'+s.eenheid+'|'+s.categorie;
+      if(!agg[key]) agg[key] = {naam:s.naam, eenheid:s.eenheid, categorie:s.categorie, hoeveelheid:0};
+      agg[key].hoeveelheid += s.hoeveelheid;
+    });
+  }
+  return agg;
+}
+
+function aggregateIngredients(){
+  return aggregateFromSelections(weekSelections(), true);
+}
+
+function renderShoppingListInto(agg, elementId, prefix){
+  const byCat = {};
+  CATS.forEach(c=>byCat[c]=[]);
+  Object.values(agg).forEach(item=>{
+    if(!byCat[item.categorie]) byCat[item.categorie]=[];
+    byCat[item.categorie].push(item);
+  });
+
+  const el = document.getElementById(elementId);
+  const nonEmptyCats = CATS.filter(c=>byCat[c].length>0);
+  if(nonEmptyCats.length===0){
+    el.innerHTML = '<p class="empty-note">Nog niets geselecteerd.</p>';
+    return;
+  }
+
+  el.innerHTML = nonEmptyCats.map(cat=>`
+    <div class="shop-cat">
+      <h4>${cat}</h4>
+      ${byCat[cat].map(item=>{
+        const id = prefix+'_'+item.naam.replace(/\s+/g,'_')+'_'+item.eenheid;
+        const checked = shoppingChecked[id] ? 'checked' : '';
+        return `
+        <div class="shop-item ${checked?'checked':''}" id="wrap_${id}">
+          <input type="checkbox" id="${id}" ${checked} onchange="toggleShopItem('${id}')">
+          <span class="amt">${Math.round(item.hoeveelheid*10)/10} ${item.eenheid}</span>
+          <label for="${id}">${item.naam}</label>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+}
+
+function generateShoppingList(){
+  const agg = aggregateIngredients();
+  renderShoppingListInto(agg, 'shoppingList', 'shop');
+}
+
+// ---------- Snelle bestelling (receptenboek) ----------
+function renderQuickRecipeList(){
+  const el = document.getElementById('quickRecipeList');
+  if(recipes.length===0){ el.innerHTML = '<p class="empty-note">Nog geen recepten in je receptenboek. Voeg ze toe bij "Receptenbank".</p>'; return; }
+  el.innerHTML = recipes.map(r=>`
+    <div class="recipe-card">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="quick_chk_${r.id}">
+        <div class="info">
+          <b>${r.naam}</b><br>
+          <span class="macros">${r.kcal} kcal / portie · ${r.ingredients.length} ingr.</span>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <label style="margin:0; font-size:12px;">Porties</label>
+        <input type="number" id="quick_porties_${r.id}" value="${settings.personen}" min="0" style="width:60px;">
+      </div>
+    </div>
+  `).join('');
+}
+
+function generateQuickOrder(){
+  const selections = recipes
+    .filter(r=>document.getElementById('quick_chk_'+r.id)?.checked)
+    .map(r=>({recipeId:r.id, porties: parseFloat(document.getElementById('quick_porties_'+r.id).value)||0}));
+
+  if(selections.length===0 && !document.getElementById('quickIncludeStaples').checked){
+    alert('Selecteer minstens één recept of vink het standaardlijstje aan.');
+    return;
+  }
+
+  const includeStaples = document.getElementById('quickIncludeStaples').checked;
+  const agg = aggregateFromSelections(selections, includeStaples);
+  renderShoppingListInto(agg, 'quickShoppingList', 'quick');
+
+  lastQuickAgg = agg;
+  const btnEl = document.getElementById('quickExportBtn');
+  if(Object.keys(agg).length>0){
+    btnEl.innerHTML = `<button class="secondary" onclick="exportForPicnic('quick')">Exporteer voor Picnic</button>`;
+  } else {
+    btnEl.innerHTML = '';
+  }
+}
+
+function toggleShopItem(id){
+  shoppingChecked[id] = !shoppingChecked[id];
+  const wrap = document.getElementById('wrap_'+id);
+  wrap.classList.toggle('checked', shoppingChecked[id]);
+}
+
+// ---------- Export voor Picnic (Scriptable) ----------
+let lastQuickAgg = null;
+
+async function exportForPicnic(mode){
+  mode = mode || 'week';
+  const agg = mode==='quick' ? (lastQuickAgg || {}) : aggregateIngredients();
+  const prefix = mode==='quick' ? 'quick' : 'shop';
+  const items = Object.values(agg)
+    .filter(i=>!shoppingChecked[prefix+'_'+i.naam.replace(/\s+/g,'_')+'_'+i.eenheid]) // afgevinkte items overslaan
+    .map(i=>({naam:i.naam, hoeveelheid: Math.round(i.hoeveelheid*10)/10, eenheid:i.eenheid}));
+
+  if(items.length===0){
+    alert('Genereer eerst een boodschappenlijst (of alles staat al afgevinkt).');
+    return;
+  }
+
+  const payload = { bron:'Weekmenu Planner', gegenereerd: new Date().toISOString(), items };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const file = new File([blob], 'picnic-boodschappenlijst.json', {type:'application/json'});
+
+  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({ files:[file], title:'Boodschappenlijst voor Picnic' });
+    }catch(err){
+      // gebruiker annuleerde het deelvenster, geen actie nodig
+    }
+  } else {
+    // Fallback: gewone download (bv. op desktop)
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'picnic-boodschappenlijst.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+}
+
+// ---------- Init ----------
+loadPersisted();
+applySettings();
+populateStapleSelects();
+renderRecipeList();
+renderStapleList();
+renderQuickRecipeList();
+</script>
+</body>
+</html>
