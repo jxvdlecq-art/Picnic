@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simpel Boodschappen</title>
+<style>
+:root{
+  --bg:#f5f7f2; --card:#fff; --ink:#1f2a22; --muted:#6d786f;
+  --brand:#255b43; --brand2:#347a59; --accent:#f2c14e; --line:#dfe5dd;
+  --danger:#a33a2b; --shadow:0 8px 28px rgba(31,42,34,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{padding-bottom:92px}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:0 auto}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(245,247,242,.94);backdrop-filter:blur(12px);padding:calc(12px + env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid var(--line)}
+.brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.subtitle{font-size:13px;color:var(--muted);margin-top:2px}
+.iconbtn{border:0;background:var(--card);width:42px;height:42px;border-radius:14px;box-shadow:var(--shadow);font-size:20px}
+main{padding:18px 16px 28px}
+.view{display:none}.view.active{display:block}
+.hero{background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border-radius:24px;padding:22px;box-shadow:var(--shadow);margin-bottom:16px}
+.hero h1{font-size:27px;line-height:1.08;margin:0 0 8px}.hero p{margin:0;color:rgba(255,255,255,.86)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.card h2,.card h3{margin:0 0 10px}.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.small{font-size:13px;color:var(--muted)}
+.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:700;background:var(--brand);color:white;min-height:46px}
+.btn:hover{background:var(--brand2)}.btn.secondary{background:#eef3ef;color:var(--brand)}.btn.danger{background:#fff0ed;color:var(--danger)}.btn.full{width:100%}.btn.smallbtn{padding:8px 10px;min-height:auto;font-size:13px}
+.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:13px;background:#fff;padding:12px;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--line);background:white;border-radius:999px;padding:9px 12px;font-size:14px}.chip.active{background:var(--brand);color:white;border-color:var(--brand)}
+.persons{display:flex;gap:10px;overflow:auto;padding-bottom:3px}.person{min-width:108px;border:1px solid var(--line);background:white;border-radius:16px;padding:12px;text-align:left}.person.active{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#eef3ef;font-size:20px;margin-bottom:8px}.person b{display:block}.person span{font-size:12px;color:var(--muted)}
+.searchrow{display:grid;grid-template-columns:1fr auto;gap:8px}.searchrow input{border:1px solid var(--line);border-radius:14px;padding:12px}
+.recipegrid{display:grid;grid-template-columns:1fr;gap:12px}
+.recipe{background:white;border:1px solid var(--line);border-radius:19px;padding:14px;display:grid;grid-template-columns:1fr auto;gap:10px;box-shadow:0 4px 16px rgba(31,42,34,.05)}
+.recipe.selected{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}.recipe h3{font-size:17px;margin:0 0 4px}.meta{font-size:12px;color:var(--muted)}.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.tag{font-size:11px;border-radius:999px;background:#f0f3ef;padding:5px 8px}.recipeactions{display:flex;flex-direction:column;align-items:flex-end;gap:8px}.heart{border:0;background:transparent;font-size:21px}.selectbtn{border:0;border-radius:12px;background:#edf4ef;color:var(--brand);font-weight:800;padding:9px 11px}.selected .selectbtn{background:var(--brand);color:white}
+.stepper{display:flex;align-items:center;gap:8px}.stepper button{width:32px;height:32px;border:0;border-radius:10px;background:#eef3ef;font-weight:800}.stepper span{min-width:22px;text-align:center;font-weight:800}
+.orderline{display:grid;grid-template-columns:1fr auto;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}.orderline:last-child{border-bottom:0}.orderline b{display:block}.orderline span{font-size:13px;color:var(--muted)}
+.cat h3{font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 0 6px}.shopitem{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}.shopitem input{width:21px;height:21px}.shopitem.checked .name{text-decoration:line-through;color:var(--muted)}.amount{font-size:13px;font-weight:700;color:var(--brand)}
+.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr)}
+.navbtn{border:0;background:transparent;color:var(--muted);padding:8px 4px;font-size:11px;font-weight:700}.navbtn span{display:block;font-size:22px;margin-bottom:2px}.navbtn.active{color:var(--brand)}
+.fab{position:fixed;right:18px;bottom:98px;z-index:25;border:0;border-radius:18px;background:var(--accent);color:#3b2a00;font-weight:900;padding:14px 18px;box-shadow:var(--shadow)}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:999px;background:var(--accent);color:#3b2a00;font-size:12px;font-weight:900;padding:0 6px}
+.empty{text-align:center;padding:28px 12px;color:var(--muted)}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(15,25,18,.45);display:none;align-items:flex-end}.modal.open{display:flex}.sheet{background:var(--bg);width:100%;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom))}.sheethead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.sheethead h2{margin:0}.close{border:0;background:white;width:40px;height:40px;border-radius:13px}
+.notice{background:#fff7db;border:1px solid #f1d477;border-radius:14px;padding:12px;font-size:13px;margin-bottom:12px}
+.recipe-detail-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.detail-pill{background:#eef3ef;color:var(--brand);border-radius:999px;padding:7px 10px;font-size:13px;font-weight:700}.ingredient-list{margin:0 0 18px;padding:0;list-style:none}.ingredient-list li{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}.steps{margin:0;padding-left:22px}.steps li{padding:0 0 12px 4px;line-height:1.5}.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+@media(min-width:680px){.recipegrid{grid-template-columns:1fr 1fr}.bottomnav{left:50%;transform:translateX(-50%);max-width:760px}.modal{align-items:center;justify-content:center}.sheet{max-width:620px;border-radius:24px;max-height:86vh}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brandrow"><div><div class="brand">Simpel Boodschappen</div><div class="subtitle">Kies recepten. Klaar.</div></div><button class="iconbtn" onclick="openSettings()">⚙️</button></div>
+</header>
+<main>
+<section id="view-order" class="view active">
+  <div class="hero"><h1>Wat eten we?</h1><p>Kies een paar recepten en maak direct je boodschappenlijst.</p></div>
+  <div class="card">
+    <div class="sectionhead"><div><h2>Voor wie?</h2><div class="small">Selecteer de mensen die mee-eten</div></div><button class="btn secondary smallbtn" onclick="showView('people')">Beheren</button></div>
+    <div class="persons" id="orderPeople"></div>
+  </div>
+  <div class="card">
+    <div class="sectionhead"><div><h2>Gekozen recepten <span class="badge" id="selectedCount">0</span></h2><div class="small">Pas porties aan als dat nodig is</div></div></div>
+    <div id="selectedRecipes"></div>
+    <button class="btn full" onclick="showView('recipes')">+ Recepten kiezen</button>
+  </div>
+  <button class="btn full" style="font-size:17px" onclick="generateShopping()">Maak boodschappenlijst</button>
+  <div id="shoppingOutput" style="margin-top:14px"></div>
+</section>
+
+<section id="view-recipes" class="view">
+  <div class="sectionhead"><div><h2>Recepten</h2><div class="small"><span id="recipeCount"></span> recepten beschikbaar</div></div><button class="btn smallbtn" onclick="openRecipeEditor()">+ Nieuw</button></div>
+  <div class="card">
+    <div class="searchrow"><input id="search" placeholder="Zoek op recept of ingrediënt" oninput="renderRecipes()"><button class="btn secondary smallbtn" onclick="toggleFavorites()">♥</button></div>
+    <div class="chips" id="filterChips" style="margin-top:10px"></div>
+  </div>
+  <div class="recipegrid" id="recipeGrid"></div>
+</section>
+
+<section id="view-people" class="view">
+  <div class="sectionhead"><div><h2>Personen</h2><div class="small">Voorkeuren bepalen welke recepten je ziet</div></div><button class="btn smallbtn" onclick="openPersonEditor()">+ Persoon</button></div>
+  <div id="peopleList"></div>
+</section>
+
+<section id="view-settings" class="view">
+  <h2>Instellingen</h2>
+  <div class="card"><h3>Standaardproducten</h3><div class="small" style="margin-bottom:10px">Dingen die altijd mee mogen, zoals melk of toiletpapier.</div><div id="staplesList"></div><button class="btn secondary full" onclick="addStaplePrompt()">+ Standaardproduct</button></div>
+  <div class="card"><h3>Gegevens</h3><button class="btn secondary full" onclick="exportData()">Exporteer mijn gegevens</button><button class="btn secondary full" style="margin-top:8px" onclick="document.getElementById('importFile').click()">Importeer gegevens</button><input id="importFile" type="file" accept="application/json" hidden onchange="importData(event)"><button class="btn danger full" style="margin-top:8px" onclick="resetApp()">Alles wissen</button></div>
+  <div class="notice">De Picnic-export gebruikt alleen een JSON-lijst. Het aparte Scriptable-script blijft nodig om producten daadwerkelijk aan Picnic toe te voegen.</div>
+</section>
+</main>
+</div>
+
+<nav class="bottomnav">
+<button class="navbtn active" data-view="order" onclick="showView('order')"><span>🛒</span>Bestellen</button>
+<button class="navbtn" data-view="recipes" onclick="showView('recipes')"><span>🍲</span>Recepten</button>
+<button class="navbtn" data-view="people" onclick="showView('people')"><span>👥</span>Personen</button>
+<button class="navbtn" data-view="settings" onclick="showView('settings')"><span>⚙️</span>Instellingen</button>
+</nav>
+
+<div class="modal" id="modal"><div class="sheet"><div class="sheethead"><h2 id="modalTitle"></h2><button class="close" onclick="closeModal()">✕</button></div><div id="modalBody"></div></div></div>
+
+<script>
+const CATS=["Groente & Fruit","Vlees & Vis","Zuivel & Eieren","Brood & Granen","Kruidenierskast","Diepvries","Overig"];
+const UNITS=["g","kg","ml","l","stuks","el","tl","snuf"];
+const FILTERS=["Alles","Snel","Vegetarisch","Vegan","Vis","Kip","Pasta","Rijst","Aardappels","Favorieten"];
+let state=loadState();
+let activeFilter="Alles", onlyFavorites=false;
+
+function uid(){return 'id'+Math.random().toString(36).slice(2,10)}
+function esc(v=''){return String(v).replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':'&quot;'}[m]))}
+function save(){localStorage.setItem('simpel_boodschappen_v1',JSON.stringify(state))}
+function loadState(){
+  const saved=localStorage.getItem('simpel_boodschappen_v1');
+  if(saved){try{const parsed=JSON.parse(saved);parsed.recipes=(parsed.recipes||[]).map(normalizeRecipe);return parsed}catch(e){}}
+  return {people:[{id:uid(),name:'Ik',emoji:'🙂',active:true,diets:[],dislikes:[]}],recipes:seedRecipes(),selected:{},favorites:[],staples:[{id:uid(),name:'Melk',amount:1,unit:'l',cat:'Zuivel & Eieren',active:false}],checked:{}};
+}
+
+function seedRecipes(){
+  const bases=[
+    ['Pasta pesto met kip','Pasta','Kip',20,['pasta','kipfilet','pesto','cherrytomaten']],['Romige tomatenpasta','Pasta','Vegetarisch',20,['pasta','tomatenblokjes','roomkaas','spinazie']],['Spaghetti bolognese','Pasta','Vlees',30,['spaghetti','rundergehakt','tomatenblokjes','ui']],['Pasta met zalm','Pasta','Vis',25,['pasta','zalm','spinazie','kookroom']],['Pasta arrabbiata','Pasta','Vegan',20,['pasta','tomatenblokjes','knoflook','rode peper']],
+    ['Kip teriyaki rijst','Rijst','Kip',25,['rijst','kipfilet','broccoli','teriyakisaus']],['Nasi met ei','Rijst','Vegetarisch',25,['rijst','eieren','nasigroente','ketjap']],['Curry met kikkererwten','Rijst','Vegan',25,['rijst','kikkererwten','kokosmelk','currypasta']],['Zalmrijst bowl','Rijst','Vis',25,['rijst','zalm','komkommer','avocado']],['Mexicaanse rijstschotel','Rijst','Vegetarisch',30,['rijst','kidneybonen','mais','paprika']],
+    ['Traybake kip aardappel','Aardappels','Kip',35,['aardappels','kipdij','paprika','courgette']],['Aardappel-prei ovenschotel','Aardappels','Vegetarisch',40,['aardappels','prei','kaas','kookroom']],['Zalm met krieltjes','Aardappels','Vis',30,['krieltjes','zalm','sperziebonen','citroen']],['Boerenkoolstamppot','Aardappels','Vlees',35,['aardappels','boerenkool','rookworst','melk']],['Zoete aardappel curry','Aardappels','Vegan',30,['zoete aardappel','kikkererwten','kokosmelk','spinazie']],
+    ['Wraps met kip','Snel','Kip',20,['wraps','kipfilet','sla','paprika']],['Wraps met bonen','Snel','Vegan',15,['wraps','zwarte bonen','mais','avocado']],['Quesadilla kaas','Snel','Vegetarisch',15,['wraps','kaas','paprika','mais']],['Pokébowl tofu','Snel','Vegan',20,['rijst','tofu','komkommer','edamame']],['Broodje zalm','Snel','Vis',10,['broodjes','gerookte zalm','roomkaas','komkommer']]
+  ];
+  const extras=['klassiek','citroen','mediterraan','pittig','groen'];
+  const recipes=[];
+  bases.forEach((b,bi)=>extras.forEach((x,xi)=>{
+    const name=xi===0?b[0]:`${b[0]} – ${x}`;
+    const tags=[b[1],b[2]]; if(b[3]<=20)tags.push('Snel');
+    const ingredients=b[4].map((n,i)=>({name:n,amount:i===0?200:(i===1?150:100),unit:i===0&&['rijst','pasta','spaghetti','aardappels','krieltjes'].some(k=>n.includes(k))?'g':'g',cat:guessCat(n)}));
+    recipes.push(normalizeRecipe({id:uid(),name,time:b[3]+xi*2,tags,ingredients}));
+  }));
+  return recipes.slice(0,100);
+}
+function guessCat(n){const s=n.toLowerCase();if(/kip|zalm|gehakt|rookworst/.test(s))return'Vlees & Vis';if(/melk|kaas|room|ei/.test(s))return'Zuivel & Eieren';if(/brood|wrap|pasta|spaghetti|rijst|aardappel/.test(s))return'Brood & Granen';if(/broccoli|tomaat|spinazie|ui|paprika|courgette|komkommer|avocado|prei|boerenkool|citroen/.test(s))return'Groente & Fruit';return'Kruidenierskast'}
+function defaultSteps(r){
+  const names=(r.ingredients||[]).map(i=>i.name);
+  const first=names[0]||'hoofdingrediënt';
+  const rest=names.slice(1);
+  const lower=(r.name||'').toLowerCase();
+  if(lower.includes('traybake'))return [`Verwarm de oven voor op 200 °C en bekleed een bakplaat.`,`Snijd de groenten en aardappels in gelijke stukken. Meng alles met olie, zout, peper en eventuele kruiden.`,`Verdeel ${first} en de overige ingrediënten over de bakplaat.`,`Bak ongeveer ${Math.max(25,r.time-5)} minuten. Schep halverwege om en controleer of alles gaar is.`];
+  if(lower.includes('ovenschotel'))return [`Verwarm de oven voor op 200 °C. Kook de aardappels of pasta bijna gaar.`,`Snijd en bak ${rest.slice(0,2).join(' en ')||'de groenten'} kort in een koekenpan.`,`Doe alles in een ovenschaal, voeg saus of room toe en strooi de kaas erover.`,`Bak 20–25 minuten tot de bovenkant goudbruin is.`];
+  if(lower.includes('stamppot'))return [`Schil de aardappels, snijd ze in stukken en kook ze met de groente in 20 minuten gaar.`,`Verwarm ondertussen de rookworst volgens de verpakking.`,`Giet af en stamp met melk, zout en peper tot een smeuïge stamppot.`,`Serveer direct met de rookworst.`];
+  if(lower.includes('wrap')||lower.includes('quesadilla'))return [`Snijd de vulling klein. Bak vlees of groenten met wat olie en kruiden gaar.`,`Verwarm de wraps kort in een droge pan of magnetron.`,`Verdeel de vulling over de wraps${lower.includes('quesadilla')?', voeg kaas toe en vouw dubbel':', voeg saus of sla toe en rol stevig op'}.`,`Bak een quesadilla nog 2–3 minuten per kant; serveer wraps direct.`];
+  if(lower.includes('bowl')||lower.includes('poké'))return [`Kook de rijst volgens de verpakking en laat kort uitstomen.`,`Bereid ${rest[0]||'de eiwitbron'}: bak of gaar deze tot hij klaar is.`,`Snijd de overige groenten en maak eventueel een eenvoudige dressing.`,`Verdeel de rijst over kommen, leg alle onderdelen erop en voeg de saus toe.`];
+  if(lower.includes('curry'))return [`Kook de rijst volgens de verpakking.`,`Snijd de groenten. Bak ui of currypasta 2 minuten in een ruime pan.`,`Voeg ${rest.join(', ')||'de overige ingrediënten'} toe en roer goed door.`,`Laat 15–20 minuten zacht koken tot de groenten gaar zijn. Serveer met de rijst.`];
+  if(lower.includes('nasi')||lower.includes('rijstschotel')||lower.includes('teriyaki'))return [`Kook de rijst liefst vooraf en laat hem iets afkoelen.`,`Snijd de groenten en bak ${rest[0]||'de vulling'} in een grote pan gaar.`,`Voeg de rijst, groenten en saus toe. Bak alles 5–7 minuten op hoog vuur.`,`Proef, breng op smaak en serveer direct.`];
+  if(lower.includes('pasta')||lower.includes('spaghetti'))return [`Breng een ruime pan water met zout aan de kook en kook de ${first} beetgaar. Bewaar een kopje kookvocht.`,`Snijd en bak ${rest.slice(0,2).join(' en ')||'de overige ingrediënten'} in een grote koekenpan.`,`Voeg de saus of smaakmakers toe en laat enkele minuten zacht pruttelen.`,`Meng de pasta door de saus. Voeg zo nodig wat kookvocht toe en serveer.`];
+  if(lower.includes('broodje'))return [`Snijd de komkommer en bereid eventuele andere toppings.`,`Snijd de broodjes open en besmeer ze met roomkaas of saus.`,`Beleg met ${rest.join(', ')||'de ingrediënten'}.`,`Breng op smaak met peper en serveer meteen.`];
+  return [`Zet alle ingrediënten klaar en snijd groenten of vlees in gelijke stukken.`,`Bereid ${first} volgens de verpakking of bak het in een ruime pan gaar.`,`Voeg ${rest.join(', ')||'de overige ingrediënten'} toe en laat alles samen gaar worden.`,`Proef, breng op smaak met zout en peper en serveer direct.`];
+}
+function normalizeRecipe(r){return {...r,ingredients:r.ingredients||[],tags:r.tags||[],steps:Array.isArray(r.steps)&&r.steps.length?r.steps:defaultSteps(r)}}
+
+
+function showView(name){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+name).classList.add('active');document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));if(name==='recipes')renderRecipes();if(name==='order')renderOrder();if(name==='people')renderPeople();if(name==='settings')renderSettings();window.scrollTo({top:0,behavior:'smooth'})}
+function openSettings(){showView('settings')}
+
+function renderOrder(){
+  document.getElementById('orderPeople').innerHTML=state.people.map(p=>`<button class="person ${p.active?'active':''}" onclick="togglePerson('${p.id}')"><div class="avatar">${esc(p.emoji)}</div><b>${esc(p.name)}</b><span>${p.diets.length?p.diets.join(', '):'geen voorkeur'}</span></button>`).join('');
+  const entries=Object.entries(state.selected).filter(([,n])=>n>0);
+  document.getElementById('selectedCount').textContent=entries.length;
+  document.getElementById('selectedRecipes').innerHTML=entries.length?entries.map(([id,n])=>{const r=state.recipes.find(x=>x.id===id);if(!r)return'';return`<div class="orderline"><div><b>${esc(r.name)}</b><span>${r.time} min</span></div><div class="stepper"><button onclick="changeSelected('${id}',-1)">−</button><span>${n}</span><button onclick="changeSelected('${id}',1)">+</button></div></div>`}).join(''):'<div class="empty">Nog geen recepten gekozen.</div>';
+}
+function togglePerson(id){const p=state.people.find(x=>x.id===id);if(p)p.active=!p.active;save();renderOrder()}
+function changeSelected(id,d){state.selected[id]=Math.max(0,(state.selected[id]||0)+d);if(!state.selected[id])delete state.selected[id];save();renderOrder();renderRecipes()}
+
+function renderFilterChips(){document.getElementById('filterChips').innerHTML=FILTERS.map(f=>`<button class="chip ${activeFilter===f?'active':''}" onclick="setFilter('${f}')">${f}</button>`).join('')}
+function setFilter(f){activeFilter=f;onlyFavorites=f==='Favorieten';renderRecipes()}
+function toggleFavorites(){onlyFavorites=!onlyFavorites;activeFilter=onlyFavorites?'Favorieten':'Alles';renderRecipes()}
+function visibleRecipes(){
+ const q=(document.getElementById('search')?.value||'').toLowerCase();
+ const activePeople=state.people.filter(p=>p.active);
+ return state.recipes.filter(r=>{
+   if(q&&!(`${r.name} ${r.tags.join(' ')} ${r.ingredients.map(i=>i.name).join(' ')}`.toLowerCase().includes(q)))return false;
+   if(onlyFavorites&&!state.favorites.includes(r.id))return false;
+   if(activeFilter!=='Alles'&&activeFilter!=='Favorieten'&&!r.tags.includes(activeFilter))return false;
+   const diets=activePeople.flatMap(p=>p.diets||[]); if(diets.includes('Vegan')&&!r.tags.includes('Vegan'))return false; if(diets.includes('Vegetarisch')&&!(r.tags.includes('Vegetarisch')||r.tags.includes('Vegan')))return false;
+   const dislikes=activePeople.flatMap(p=>p.dislikes||[]).map(x=>x.toLowerCase()).filter(Boolean); if(dislikes.some(d=>r.ingredients.some(i=>i.name.toLowerCase().includes(d))))return false;
+   return true;
+ });
+}
+function renderRecipes(){renderFilterChips();const list=visibleRecipes();document.getElementById('recipeCount').textContent=list.length;document.getElementById('recipeGrid').innerHTML=list.map(r=>{const selected=state.selected[r.id]>0;return`<article class="recipe ${selected?'selected':''}"><div onclick="openRecipeDetail('${r.id}')"><h3>${esc(r.name)}</h3><div class="meta">⏱ ${r.time} min · ${r.ingredients.length} ingrediënten · tik voor recept</div><div class="tags">${r.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div></div><div class="recipeactions"><button class="heart" onclick="event.stopPropagation();toggleFavorite('${r.id}')">${state.favorites.includes(r.id)?'♥':'♡'}</button><button class="selectbtn" onclick="event.stopPropagation();changeSelected('${r.id}',${selected?-state.selected[r.id]:1})">${selected?'Gekozen':'Kies'}</button></div></article>`}).join('')||'<div class="empty">Geen recepten gevonden met deze filters.</div>'}
+function toggleFavorite(id){state.favorites=state.favorites.includes(id)?state.favorites.filter(x=>x!==id):[...state.favorites,id];save();renderRecipes()}
+function openRecipeDetail(id){
+ const r=normalizeRecipe(state.recipes.find(x=>x.id===id));if(!r)return;
+ const eaters=Math.max(1,state.people.filter(p=>p.active).length);
+ openModal(r.name,`<div class="recipe-detail-meta"><span class="detail-pill">⏱ ${r.time} minuten</span><span class="detail-pill">👥 ${eaters} ${eaters===1?'persoon':'personen'}</span></div><h3>Ingrediënten</h3><ul class="ingredient-list">${r.ingredients.map(i=>`<li><span>${esc(i.name)}</span><b>${nice(i.amount*eaters)} ${esc(i.unit)}</b></li>`).join('')}</ul><h3>Bereiding</h3><ol class="steps">${r.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol><div class="detail-actions"><button class="btn secondary" onclick="openRecipeEditor('${r.id}')">Bewerken</button><button class="btn" onclick="changeSelected('${r.id}',1);closeModal()">Kies recept</button></div>`)
+}
+
+
+function generateShopping(){
+ const chosen=Object.entries(state.selected).filter(([,n])=>n>0);if(!chosen.length){alert('Kies eerst minstens één recept.');return}
+ const eaters=Math.max(1,state.people.filter(p=>p.active).length);const agg={};
+ chosen.forEach(([id,mult])=>{const r=state.recipes.find(x=>x.id===id);if(!r)return;r.ingredients.forEach(i=>{const key=i.name.toLowerCase()+'|'+i.unit+'|'+i.cat;if(!agg[key])agg[key]={...i,amount:0};agg[key].amount+=i.amount*mult*eaters})});
+ state.staples.filter(s=>s.active).forEach(s=>{const key=s.name.toLowerCase()+'|'+s.unit+'|'+s.cat;if(!agg[key])agg[key]={name:s.name,amount:0,unit:s.unit,cat:s.cat};agg[key].amount+=s.amount});
+ const by={};Object.values(agg).forEach(i=>(by[i.cat]??=[]).push(i));
+ const html=`<div class="card"><div class="sectionhead"><div><h2>Boodschappenlijst</h2><div class="small">Voor ${eaters} ${eaters===1?'persoon':'personen'}</div></div><button class="btn secondary smallbtn" onclick="exportPicnic()">Picnic</button></div>${CATS.filter(c=>by[c]?.length).map(c=>`<div class="cat"><h3>${c}</h3>${by[c].sort((a,b)=>a.name.localeCompare(b.name)).map(i=>{const id='shop_'+btoa(unescape(encodeURIComponent(i.name+i.unit))).replace(/=/g,'');return`<label class="shopitem ${state.checked[id]?'checked':''}"><input type="checkbox" ${state.checked[id]?'checked':''} onchange="toggleCheck('${id}',this)"><span class="name">${esc(i.name)}</span><span class="amount">${nice(i.amount)} ${i.unit}</span></label>`}).join('')}</div>`).join('')}<button class="btn secondary full" style="margin-top:16px" onclick="copyList()">Kopieer lijst</button></div>`;
+ window.currentAgg=agg;document.getElementById('shoppingOutput').innerHTML=html;document.getElementById('shoppingOutput').scrollIntoView({behavior:'smooth'});
+}
+function nice(n){return Math.round(n*10)/10}
+function toggleCheck(id,el){state.checked[id]=el.checked;save();el.closest('.shopitem').classList.toggle('checked',el.checked)}
+function plainList(){return Object.values(window.currentAgg||{}).map(i=>`${nice(i.amount)} ${i.unit} ${i.name}`).join('\n')}
+async function copyList(){try{await navigator.clipboard.writeText(plainList());alert('Boodschappenlijst gekopieerd.')}catch(e){alert(plainList())}}
+async function exportPicnic(){const items=Object.values(window.currentAgg||{}).map(i=>({naam:i.name,hoeveelheid:nice(i.amount),eenheid:i.unit}));const json=JSON.stringify({bron:'Simpel Boodschappen',gegenereerd:new Date().toISOString(),items},null,2);try{await navigator.clipboard.writeText(json);alert('Picnic-lijst gekopieerd. Open nu het Scriptable-script.')}catch(e){download('picnic-boodschappenlijst.json',json)}}
+
+function renderPeople(){document.getElementById('peopleList').innerHTML=state.people.map(p=>`<div class="card"><div class="sectionhead"><div style="display:flex;gap:12px;align-items:center"><div class="avatar">${esc(p.emoji)}</div><div><h3>${esc(p.name)}</h3><div class="small">${[...(p.diets||[]),...(p.dislikes||[]).map(x=>'geen '+x)].join(' · ')||'Geen voorkeuren'}</div></div></div><button class="btn secondary smallbtn" onclick="openPersonEditor('${p.id}')">Bewerk</button></div></div>`).join('')}
+function openPersonEditor(id){const p=id?state.people.find(x=>x.id===id):{id:uid(),name:'',emoji:'🙂',active:true,diets:[],dislikes:[]};openModal(id?'Persoon bewerken':'Persoon toevoegen',`<div class="field"><label>Naam</label><input id="pName" value="${esc(p.name)}"></div><div class="field"><label>Emoji</label><input id="pEmoji" value="${esc(p.emoji)}"></div><div class="field"><label>Eetvoorkeur</label><select id="pDiet"><option value="">Alles</option><option ${p.diets.includes('Vegetarisch')?'selected':''}>Vegetarisch</option><option ${p.diets.includes('Vegan')?'selected':''}>Vegan</option></select></div><div class="field"><label>Niet lekker / allergieën</label><input id="pDislikes" value="${esc((p.dislikes||[]).join(', '))}" placeholder="bv. champignons, pinda"></div><button class="btn full" onclick="savePerson('${p.id}',${!!id})">Opslaan</button>${id?`<button class="btn danger full" style="margin-top:8px" onclick="deletePerson('${p.id}')">Verwijderen</button>`:''}`)}
+function savePerson(id,exists){const obj={id,name:document.getElementById('pName').value.trim()||'Persoon',emoji:document.getElementById('pEmoji').value.trim()||'🙂',active:true,diets:document.getElementById('pDiet').value?[document.getElementById('pDiet').value]:[],dislikes:document.getElementById('pDislikes').value.split(',').map(x=>x.trim()).filter(Boolean)};if(exists){const i=state.people.findIndex(x=>x.id===id);state.people[i]={...state.people[i],...obj}}else state.people.push(obj);save();closeModal();renderPeople();renderOrder()}
+function deletePerson(id){if(state.people.length===1){alert('Er moet minstens één persoon blijven.');return}state.people=state.people.filter(x=>x.id!==id);save();closeModal();renderPeople();renderOrder()}
+
+function openRecipeEditor(id){const r=normalizeRecipe(id?state.recipes.find(x=>x.id===id):{id:uid(),name:'',time:20,tags:[],ingredients:[],steps:[]});openModal(id?'Recept bewerken':'Nieuw recept',`<div class="field"><label>Naam</label><input id="rName" value="${esc(r.name)}"></div><div class="field"><label>Bereidingstijd (minuten)</label><input id="rTime" type="number" value="${r.time}"></div><div class="field"><label>Labels, gescheiden door komma's</label><input id="rTags" value="${esc(r.tags.join(', '))}" placeholder="Snel, Vegetarisch, Pasta"></div><div class="field"><label>Ingrediënten — één per regel: hoeveelheid | eenheid | naam | categorie</label><textarea id="rIngs" rows="9" placeholder="200 | g | pasta | Brood & Granen">${esc(r.ingredients.map(i=>`${i.amount} | ${i.unit} | ${i.name} | ${i.cat}`).join('\n'))}</textarea></div><div class="field"><label>Bereidingsstappen — één stap per regel</label><textarea id="rSteps" rows="7" placeholder="Kook de pasta volgens de verpakking.">${esc((r.steps||[]).join('\n'))}</textarea></div><button class="btn full" onclick="saveRecipe('${r.id}',${!!id})">Opslaan</button>${id?`<button class="btn danger full" style="margin-top:8px" onclick="deleteRecipe('${r.id}')">Verwijderen</button>`:''}`)}
+function saveRecipe(id,exists){const ingredients=document.getElementById('rIngs').value.split('\n').map(l=>{const [amount,unit,name,cat]=l.split('|').map(x=>x.trim());return{name,amount:parseFloat(amount)||1,unit:unit||'stuks',cat:CATS.includes(cat)?cat:'Overig'}}).filter(i=>i.name);let steps=document.getElementById('rSteps').value.split('\n').map(x=>x.trim()).filter(Boolean);const obj={id,name:document.getElementById('rName').value.trim()||'Naamloos recept',time:parseInt(document.getElementById('rTime').value)||20,tags:document.getElementById('rTags').value.split(',').map(x=>x.trim()).filter(Boolean),ingredients,steps};if(!steps.length)obj.steps=defaultSteps(obj);if(exists){const i=state.recipes.findIndex(x=>x.id===id);state.recipes[i]=obj}else state.recipes.unshift(obj);save();closeModal();renderRecipes()}
+function deleteRecipe(id){if(!confirm('Dit recept verwijderen?'))return;state.recipes=state.recipes.filter(x=>x.id!==id);delete state.selected[id];state.favorites=state.favorites.filter(x=>x!==id);save();closeModal();renderRecipes();renderOrder()}
+
+function renderSettings(){document.getElementById('staplesList').innerHTML=state.staples.map(s=>`<div class="orderline"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${s.active?'checked':''} onchange="toggleStaple('${s.id}')"><span><b>${esc(s.name)}</b><span>${s.amount} ${s.unit}</span></span></label><button class="btn danger smallbtn" onclick="deleteStaple('${s.id}')">✕</button></div>`).join('')||'<div class="empty">Nog geen standaardproducten.</div>'}
+function toggleStaple(id){const s=state.staples.find(x=>x.id===id);s.active=!s.active;save();renderSettings()}
+function deleteStaple(id){state.staples=state.staples.filter(x=>x.id!==id);save();renderSettings()}
+function addStaplePrompt(){openModal('Standaardproduct toevoegen',`<div class="field"><label>Naam</label><input id="sName"></div><div class="field"><label>Hoeveelheid</label><input id="sAmount" type="number" value="1"></div><div class="field"><label>Eenheid</label><select id="sUnit">${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div><div class="field"><label>Categorie</label><select id="sCat">${CATS.map(c=>`<option>${c}</option>`).join('')}</select></div><button class="btn full" onclick="saveStaple()">Toevoegen</button>`)}
+function saveStaple(){state.staples.push({id:uid(),name:document.getElementById('sName').value.trim()||'Product',amount:parseFloat(document.getElementById('sAmount').value)||1,unit:document.getElementById('sUnit').value,cat:document.getElementById('sCat').value,active:true});save();closeModal();renderSettings()}
+
+function openModal(title,body){document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=body;document.getElementById('modal').classList.add('open')}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function download(name,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function exportData(){download('simpel-boodschappen-backup.json',JSON.stringify(state,null,2))}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=JSON.parse(r.result);save();location.reload()}catch(err){alert('Dit bestand kon niet worden geïmporteerd.')}};r.readAsText(f)}
+function resetApp(){if(confirm('Alles wissen en opnieuw beginnen?')){localStorage.removeItem('simpel_boodschappen_v1');location.reload()}}
+
+renderOrder();renderFilterChips();
+</script>
+</body>
+</html>
